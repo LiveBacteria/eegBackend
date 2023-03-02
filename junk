@@ -1,0 +1,59 @@
+// const y = tf.oneHot(tf.tensor1d(labels, "int32"), numClasses);
+
+// const history = await model.fit(x, y, { epochs: 50 });
+
+// Overly complex model below
+// Define the model architecture
+// const model = tf.sequential();
+// model.add(
+//   tf.layers.dense({
+//     inputShape: [48],
+//     units: 128,
+//     activation: "relu",
+//     kernel_regularizer: tf.regularizers.l2({ l2: 0.005 }),
+//   })
+// );
+// model.add(tf.layers.dropout({ rate: 0.5 }));
+// model.add(
+//   tf.layers.dense({
+//     units: 64,
+//     activation: "relu",
+//     kernel_regularizer: tf.regularizers.l2({ l2: 0.05 }),
+//   })
+// );
+// model.add(tf.layers.dropout({ rate: 0.5 }));
+// model.add(
+//   tf.layers.dense({
+//     units: numClasses,
+//     activation: "softmax",
+//   })
+// );
+
+// // Compile the model
+// model.compile({
+//   optimizer: "adam",
+//   loss: "categoricalCrossentropy",
+//   metrics: ["accuracy"],
+// });
+
+// const features = [];
+// const labels = [];
+
+// // shuffle the data
+// // let shuffled = resultsArray.sort(() => 0.5 - Math.random());
+
+// // Prepare the data
+// for (let i = 0; i < newResultsArray.length; i++) {
+//   features.push(newResultsArray[i][0]);
+//   labels.push(newResultsArray[i][1]);
+// }
+
+// const fLength = features.length;
+
+// console.log(features, "features");
+// console.log(labels, "labels");
+
+// const x = tf.tensor2d(features, [fLength, 48]);
+// const y = tf.oneHot(tf.tensor1d(labels, "int32"), numClasses);
+
+// const history = await model.fit(x, y, { epochs: 500 });

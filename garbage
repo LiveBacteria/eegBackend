@@ -1,0 +1,254 @@
+// const csv = Papa.unparse(formattedData, {
+//   header: true,
+//   columns: ["promptName", "eegData"],
+// });
+
+// // write csv to file
+// fs.writeFileSync("data.csv", csv);
+
+// console.log("csv", csv);
+
+// // const csvUrl = "http://localhost:3232/api/data.csv";
+// // const csvDataset = tf.data.csv(csvUrl, {
+// //   columnConfigs: {
+// //     promptName: {
+// //       isLabel: true,
+// //     },
+// //   },
+// // });
+
+// // // Number of features is the number of column names minus one for the label
+// // // column.
+
+// // console.log(await csvDataset.columnNames(), "reached 151");
+
+// // let testConsoel = true;
+
+// // // noramlize fucntion to normalize the data to be between 0 and 1  with  min max of -1000 and 1000
+
+// // // Prepare the Dataset for training.
+// // const flattenedDataset = csvDataset
+// //   .map(({ xs, ys }) => {
+// //     // Convert xs(features) and ys(labels) from object form (keyed by
+// //     // column name) to array form.
+// //     if (testConsoel) {
+// //       console.log("xs", xs, "ys", ys, "142");
+// //       console.log("xs", Object.values(xs), "ys", Object.values(ys), "143");
+// //       testConsoel = false;
+// //     }
+// //     return { xs: Object.values(xs), ys: Object.values(ys) };
+// //   })
+// //   .batch(10);
+
+// // const numOfFeatures = (await csvDataset.columnNames()).length - 1;
+
+// // Define the model.
+
+// // model.summary();
+
+// //   let singularLabel = [];
+
+// //   async function singleton() {
+// //     // let instance = tf.tensor(formattedData[0]);
+// //     // const c = tf.data.array(formattedData[Object.keys(formattedData)[0]]); //.batch(4);
+// //     // await c.forEachAsync((e) => {
+// //     singularData.push(formattedData[Object.keys(formattedData)[0]].features);
+// //     singularLabel.push(formattedData[Object.keys(formattedData)[0]].labelName);
+// //     console.log(
+// //       "127 singularData: ",
+// //       singularData,
+// //       "singularLabel:",
+// //       singularLabel
+// //     );
+// //     // });
+// //   }
+
+// const csvDataset = tf.data.csv("http://localhost:3232/api/data.csv", {
+//   columnConfigs: {
+//     promptName: {
+//       isLabel: true,
+//     },
+//   },
+// });
+
+// console.log("csvDataset", csvDataset);
+
+// const numOfFeatures = (await csvDataset.columnNames()).length - 1;
+
+// console.log("numOfFeatures", numOfFeatures);
+
+// // Prepare the dataset for training.
+// const convertedData = csvDataset
+//   .map(({ xs, ys }) => {
+//     //   Convert xs(features) and ys(labels) from object form (keyed by column name)
+//     //   to array form.
+//     console.log("xs", xs, "ys", ys);
+
+//     return { xs: Object.values(xs), ys: Object.values(ys) };
+//   })
+//   .batch(10);
+
+// // await singleton();
+
+// // create a rnn model for eeg data with 2 layers
+// const model = tf.sequential();
+
+// // add a dense layer with 36 neurons
+// model.add(
+//   tf.layers.dense({
+//     inputShape: [numOfFeatures],
+//     activation: "sigmoid",
+//     units: 36,
+//   })
+// );
+
+// // add a dense layer with 14 neurons
+// model.add(
+//   tf.layers.dense({
+//     activation: "sigmoid",
+//     units: 14,
+//   })
+// );
+
+// // add a dense layer with 2 neurons
+// model.add(
+//   tf.layers.dense({
+//     activation: "sigmoid",
+//     units: 2,
+//   })
+// );
+
+// // compile the model
+// model.compile({
+//   optimizer: tf.train.adam(),
+//   loss: tf.losses.meanSquaredError,
+//   metrics: ["accuracy"],
+// });
+
+// // train the model
+// await model.fitDataset(convertedData, {
+//   epochs: 10,
+//   callbacks: {
+//     onEpochEnd: async (epoch, logs) => {
+//       console.log("Epoch:", epoch, "Loss:", logs.loss);
+//       console.log("Epoch:", epoch, "Accuracy:", logs.acc);
+//     },
+//   },
+// });
+
+// create a sequential model
+// const model = tf.sequential();
+
+// // compile for string tensor
+// // await model.compile({
+// //   optimizer: tf.train.adam(),
+// //   loss: tf.losses.meanSquaredError,
+// //   metrics: ["accuracy"],
+// // });
+
+// // await model.compile({
+
+// await model.add(
+//   tf.layers.dense({
+//     inputShape: [numOfFeatures],
+//     activation: "sigmoid",
+//     units: 36,
+//   })
+// );
+
+// // Add a single hidden layern
+// await model.add(
+//   tf.layers.dense({
+//     activation: "sigmoid",
+//     units: 14,
+//   })
+// );
+
+// // Add an output layer
+// await model.add(
+//   tf.layers.dense({
+//     activation: "sigmoid",
+//     units: 1,
+//   })
+// );
+
+// model.summary();
+
+// // Compile the model using the settings above.
+//   optimizer: tf.train.adam(),
+//   loss: tf.losses.meanSquaredError,
+//   metrics: ["accuracy"],
+// });
+
+// model.fitDataset(convertedData, {
+//   epochs: 100,
+//   shuffle: true,
+//   callbacks: {
+//     onEpochEnd: async (epoch, logs) => {
+//       console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+//     },
+//   },
+// });
+
+//Train the model using the singleton data
+//   const xs = tf.tensor(singularData);
+//   console.log(149, xs.shape);
+//   const ys = tf.tensor(singularLabel);
+//   console.log(152, ys.shape);
+
+//   await model.fit(xs, ys, {
+// epochs: 10,
+// shuffle: true,
+// callbacks: {
+//   onEpochEnd: async (epoch, logs) => {
+// console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+//       },
+//     },
+//   });
+
+// Train the model using the data.
+//   const xs = tf.tensor(
+//     formattedData.map((item) => {
+//       return item.features;
+//     })
+//   );
+//   console.log(149, xs.shape);
+//   //   const ys = tf.tensor(formattedData.map((item) => item.labelName));
+//   console.log(
+//     152,
+//     formattedData.map((item) => item.labelName)
+//   );
+
+//   await model.fit(xs, xs, {
+//     epochs: 10,
+//     shuffle: true,
+//     callbacks: {
+//       onEpochEnd: async (epoch, logs) => {
+//         console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+//       },
+//     },
+//   });
+
+// Save the model to a file
+//   model.save("file://./model");
+
+// convert the data to a form we can use for training
+const { inputs, labels } = convertToTensors(formattedData);
+
+// train the model
+await model.fit(inputs, labels, {
+  batchSize: 32,
+  epochs: 10,
+  callbacks: tf.node.tensorBoard("/tmp/tfjs_logs"),
+});
+
+// evaluate the model
+const evalOutput = model.evaluate(inputs, labels);
+console.log(`Accuracy: ${(evalOutput[1].dataSync()[0] * 100).toFixed(1)}%`);
+
+// make some predictions using the model and compare them to the
+// labels
+const preds = model.predict(inputs).dataSync();
+labels.dataSync().forEach((val, i) => {
+  console.log(`Label: ${val}, Prediction: ${preds[i]}`);
+});

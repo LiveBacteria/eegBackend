@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Test</title>
+</head>
+
+<body>
+    <h1>API Test</h1>
+    <label for="api-select">Select an API:</label>
+    <select id="api-select">
+        <option value="">--Select--</option>
+        <option value="/api/data">Get Data</option>
+        <option value="http://localhost:3232/api/modelTrain">Train Model</option>
+        <option value="http://localhost:3232/api/modelTrain_Audio">Train Audio Model</option>
+    </select>
+    <button id="execute-button">Execute</button>
+    <div id="response-container"></div>
+        <label for="playTone">Select a tone:</label>
+        <select id="playTone">
+            <option value="">--Select--</option>
+            <option value="airTone_440">airTone_440</option>
+            <option value="earthTone_45">earthTone_45</option>
+            <option value="fireTone_880">fireTone_880</option>
+            <option value="waterTone_220">waterTone_220</option>
+        </select>
+        <button id="execute-button">Play</button>
+    <script>
+        const executeButton = document.getElementById("execute-button");
+        executeButton.addEventListener("click", async () => {
+            const apiSelect = document.getElementById("api-select");
+            const selectedApi = apiSelect.value;
+            if (!selectedApi) {
+                return;
+            }
+
+            try {
+                const response = await fetch(selectedApi);
+                const responseData = await response.json();
+                const responseContainer = document.getElementById("response-container");
+                responseContainer.innerHTML = JSON.stringify(responseData);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        const playTone = document.getElementById("playTone");
+
+        playTone.addEventListener("click", async () => {
+            const playTone = document.getElementById("playTone");
+            const selectedTone = playTone.value.split("_")[1];
+
+            if (!selectedTone) {
+                return;
+            }
+
+            playToneSound(selectedTone, 5000);
+        });
+
+
+          function playToneSound(frequency, duration) {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                oscillator.type = "sine";
+                oscillator.frequency.value = frequency;
+                oscillator.connect(audioCtx.destination);
+
+                // Add gain node for fade-out effect
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(
+                    0,
+                    audioCtx.currentTime + duration / 1000
+                );
+
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                }, duration);
+            }
+
+    </script>
+</body>
+
+</html>
