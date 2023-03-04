@@ -1,3 +1,5 @@
+// require("./abs");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 var cors = require("cors");
@@ -16,6 +18,7 @@ const fs = require("fs-extra");
 const csv1 = require("csv-parser");
 const fft = require("fft-js").fft;
 const fftUtil = require("fft-js").util;
+// const tfvis = require("@tensorflow/tfjs-vis");
 
 const Papa = require("papaparse");
 
@@ -90,6 +93,9 @@ const tf = require("@tensorflow/tfjs-node-gpu");
 var admin = require("firebase-admin");
 
 console.log(tf.getBackend());
+
+const logdir = "logs";
+const summaryWriter = tf.node.summaryFileWriter(logdir);
 
 // Fetch the service account key JSON file contents
 var serviceAccount = require("./isistr-db-firebase-adminsdk-gzboz-fecbf1a908.json");
@@ -569,7 +575,7 @@ async function trainAudioModel_Dynamic(data, identifier) {
     }
   });
 
-  const numClasses = 3;
+  const numClasses = 4;
 
   if (!Array.isArray(resultsArray)) {
     console.error("Results is not an array.");
@@ -605,7 +611,17 @@ async function trainAudioModel_Dynamic(data, identifier) {
   const newResultsArray = resultsArray.map(([result, label], index) => {
     const tempArray = [];
 
+    //  NEED TO FLATTEN FFT data array prior to passing to the model to train on
+    // let result = [];
+    // for (var electrode in arr) {
+    //   console.log(arr[electrode], "electrode");
+    //   for (var entry in electrode) {
+    //     console.log(electrode[entry], "entry");
+    //   }
+    // }
+
     // loop the result array and split and create 4 new arrays of 12 each
+    // resultsArray.length
     if (index < resultsArray.length) {
       for (let j = 0; j < result.length; j += 12) {
         const newResult = tf.tensor1d(result.slice(j, j + 12), "float32");
@@ -636,6 +652,11 @@ async function trainAudioModel_Dynamic(data, identifier) {
 
   const dataset = tf.data.array(newData);
 
+  dataset.forEachAsync((element) => {
+    console.log(element.shape); // output: [3, 4]
+    return Promise.resolve(); // required to avoid warning message
+  }, this);
+
   console.log(newData[1], "newData");
 
   // Shuffle the data and split into training, validation, and test sets
@@ -644,6 +665,9 @@ async function trainAudioModel_Dynamic(data, identifier) {
   const numValExamples = Math.floor(numExamples * 0.15);
   const numTestExamples = numExamples - numTrainExamples - numValExamples;
   const batchSize = 32;
+
+  // // Reshape input dataset to match the input shape of the model
+  // const reshapedData = tf.tensor4d(dataset, [numExamples, 4, 12, 12]);
 
   const trainDataset = dataset.take(numTrainExamples).batch(batchSize);
   const valDataset = dataset
@@ -659,7 +683,7 @@ async function trainAudioModel_Dynamic(data, identifier) {
       tf.layers.dense({
         units: 128,
         activation: "relu",
-        inputShape: [4, 12, 12],
+        inputShape: [4, 12, 1],
       }),
       tf.layers.flatten(),
       tf.layers.dense({ units: 64, activation: "relu" }),
@@ -673,22 +697,39 @@ async function trainAudioModel_Dynamic(data, identifier) {
     metrics: ["accuracy"],
   });
 
-  // Reshape input data to match the input shape of the model
-  const reshapedData = tf.tensor4d(newResultsArray, [numExamples, 4, 12, 12]);
+  // Set up TensorBoard callback
+  const tensorBoardCallback = tf.node.tensorBoard(logdir, {
+    updateFreq: "epoch",
+    histogramFreq: 1,
+  });
 
   // Train the model on the reshaped data
   await model.fit(trainDataset, {
-    epochs: 25,
+    epochs: 10,
     validationData: valDataset,
-    callbacks: tfvis.show.fitCallbacks(
-      { name: "Training Performance" },
-      ["loss", "val_loss", "acc", "val_acc"],
-      { callbacks: ["onEpochEnd"] }
-    ),
+    callbacks: [tensorBoardCallback],
   });
 
+  // Evaluate the model on the test dataset
+  const evalOutput = model.evaluate(testDataset);
+
+  // Log the evaluation accuracy
+  console.log(`Test Accuracy: ${(await evalOutput[1].data())[0]}`);
+
+  // Train the model on the reshaped data
+  // trainDataset
+  // await model.fit(trainDataset, {
+  //   epochs: 25,
+  //   validationData: valDataset,
+  //   callbacks: tfvis.show.fitCallbacks(
+  //     { name: "Training Performance" },
+  //     ["loss", "val_loss", "acc", "val_acc"],
+  //     { callbacks: ["onEpochEnd"] }
+  //   ),
+  // });
+
   // Save the model
-  await model.save("file://model");
+  await model.save("file://./model");
 }
 
 async function trainAudioMo_del_Dynamic(data, identifier) {
@@ -918,7 +959,7 @@ async function trainAudioModel(data) {
 
   const history = await model.fit(x, y, { epochs: 500 });
 
-  const modelSavePath = "file://toneAI_model_500Epoch"; // Path to save the model
+  const modelSavePath = "file://toneAI_model_rework"; // Path to save the model
 
   await model.save(modelSavePath);
   console.log("Model saved successfully!");
